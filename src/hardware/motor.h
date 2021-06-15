@@ -7,6 +7,7 @@ class stepper
 private:
     bool calibDone = false;
     bool actionDone = false;
+    bool direction = false;
     int32_t freq = -1;
     int32_t length_ms = -1;
     int32_t now_ms = 0; //position now
@@ -25,13 +26,14 @@ private:
     /* data */
 public:
     void (*actionDoneHook)(stepper*) = nullptr;
+    void (*calibDoneHook)(stepper*) = nullptr;
     static void setup();
     bool isCalibDone();
     stepper(uint8_t CP, uint8_t DIR, uint8_t Limit, uint8_t channel, int32_t frequency, uint8_t ID_);
     // void setFerq(int freq);
     void setTotalMS(int32_t ms);
     int setAngle(float pos);
-    void calibrate_start(bool direction);
+    void calibrate_start(bool direction_);
     int handle();
     uint8_t getID();
     ~stepper();
