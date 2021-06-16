@@ -59,17 +59,19 @@ bool stepper::isCalibDone(){
 }
 
 int stepper::setAngle(float pos){
-    Serial.print("Got set angle ");
+    Serial.print("ID ");
+    Serial.print(this->getID());
+    Serial.print(" Set angle ");
     Serial.println(pos);
     if (length_ms <= 0)
         throw;
     if (!calibDone || pos > Anglemax || pos < Anglemin)
         return -1;
     target_ms = ((length_ms + 0.0) / (Anglemax - Anglemin)) * (pos - Anglemin);
-    Serial.print("target_ms");
-    Serial.println(target_ms);
-    Serial.print("now_ms");
-    Serial.println(now_ms);
+    // Serial.print("target_ms");
+    // Serial.println(target_ms);
+    // Serial.print("now_ms");
+    // Serial.println(now_ms);
     if (abs(target_ms - now_ms) < 20){
         // dont actionDone = true; here, if we do
         // if might cause infinite Recursion

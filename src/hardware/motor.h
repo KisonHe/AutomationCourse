@@ -6,6 +6,7 @@ class stepper
 {
 private:
     bool calibDone = false;
+    // bool calibDone = true;
     bool actionDone = false;
     bool direction = false;
     int32_t freq = -1;
