@@ -5,6 +5,33 @@
 import cv2 as cv
 import numpy as np
 import argparse
+from enum import Enum
+class Status_t(Enum):
+    start = 0
+    hand = 1
+    back = 2
+    finished = 3
+
+
+class Pos_t(Enum):
+    Error = -1
+    handsAboveHead = 0
+    handsBelowHead = 1
+    handsSameHead = 2
+
+# @return: Pos_t
+def getPos(neck,L,R)->Pos_t:
+    try:
+        if ((neck[1] - left_wrist[1] > 50) and(neck[1] - right_wrist[1] > 50)):
+            return Pos_t.handsAboveHead
+        elif ((abs(neck[1] - left_wrist[1]) < 50) and(abs(neck[1] - right_wrist[1]) < 50)):
+            return Pos_t.handsSameHead
+        elif ((-neck[1] + left_wrist[1] > 50) and(-neck[1] + right_wrist[1] > 50)):
+            return Pos_t.handsBelowHead
+    except:
+        return Pos_t.Error 
+
+Status = Status_t.start
 
 parser = argparse.ArgumentParser(
         description='This script is used to demonstrate OpenPose human pose estimation network '
@@ -71,8 +98,9 @@ inScale = args.scale
 
 net = cv.dnn.readNet(cv.samples.findFile(args.proto), cv.samples.findFile(args.model))
 
-cap = cv.VideoCapture(args.input if args.input else 0)
-
+# cap = cv.VideoCapture(args.input if args.input else 0)
+cap = cv.VideoCapture("/dev/video2")
+cnt = 0
 while cv.waitKey(1) < 0:
     hasFrame, frame = cap.read()
     if not hasFrame:
@@ -117,6 +145,24 @@ while cv.waitKey(1) < 0:
             cv.ellipse(frame, points[idFrom], (3, 3), 0, 0, 360, (0, 0, 255), cv.FILLED)
             cv.ellipse(frame, points[idTo], (3, 3), 0, 0, 360, (0, 0, 255), cv.FILLED)
 
+            neck = points[BODY_PARTS['Neck']]
+            left_wrist = points[BODY_PARTS['LWrist']]
+            right_wrist = points[BODY_PARTS['RWrist']]
+            ret = getPos(neck,left_wrist,right_wrist)
+            if (ret != Pos_t.Error):
+                if (Status == Status_t.start and ret == Pos_t.handsAboveHead):
+                    Status = Status_t.hand
+                    #FIXME Send message here
+                elif (Status == Status_t.hand):
+                    if (ret == Pos_t.handsSameHead):
+                        Status = Status_t.back
+                    pass
+                elif (Status == Status_t.back):
+                    if (ret == Pos_t.handsBelowHead):
+                        Status = Status_t.finished
+                    pass
+                pass
+            
     t, _ = net.getPerfProfile()
     freq = cv.getTickFrequency() / 1000
     cv.putText(frame, '%.2fms' % (t / freq), (10, 20), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
