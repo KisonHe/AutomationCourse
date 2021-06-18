@@ -100,12 +100,14 @@ void loop() {
     Serial.readBytes(buffer, incoming);
     if (buffer[0] == '1' && status == 0 && (calib_map == 0b00111010)){
       status = 1;
+      run_move(chuoshou,17);
       Serial.println("enter state 1");
       //FIXME 
       // run_move()
     }
     else if (buffer[1] == '2' && status == 1 && action_map == 0b00111010){
       status = 2;
+      run_move(chuobei,24);
       Serial.println("enter state 2");
       //FIXME 
       // run_move()

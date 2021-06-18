@@ -8,6 +8,24 @@ import argparse
 from enum import Enum
 import serial
 import subprocess
+
+class Crop:
+    def __init__(self, y1, y2, x1, x2):
+        self.y = y1
+        self.y_h = y2
+        self.x = x1
+        self.x_w = x2
+
+    y = 0
+    y_h = 0
+    x = 0
+    x_w = 0
+
+# 14,20
+# 500,440
+
+BodyCrop = Crop(20, 440, 14, 500)
+
 class Status_t(Enum):
     start = 0
     hand = 1
@@ -113,13 +131,16 @@ net = cv.dnn.readNet(cv.samples.findFile(args.proto), cv.samples.findFile(args.m
 cap = cv.VideoCapture("/dev/video2")
 if (USE_UART == 1):
     mainSer = serial.Serial(uart_port, 115200)
+else:
+    mainSer = 0
 cnt = 0
 while cv.waitKey(1) < 0:
     hasFrame, frame = cap.read()
     if not hasFrame:
         cv.waitKey()
         break
-    frame = cv.rotate(frame, cv.cv2.ROTATE_90_CLOCKWISE)
+    # frame = cv.rotate(frame, cv.cv2.ROTATE_90_CLOCKWISE)
+    frame = frame[BodyCrop.y:BodyCrop.y_h, BodyCrop.x:BodyCrop.x_w].copy()
 
     frameWidth = frame.shape[1]
     frameHeight = frame.shape[0]
