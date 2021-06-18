@@ -19,4 +19,5 @@ typedef struct
 extern move chuoshou[];
 extern move yujin[];
 extern move chuobei[];
+extern move demo[];
 #endif
