@@ -19,7 +19,7 @@ static int8_t nowTotalNumOfMoves = 0;
 static int8_t nowMoveNum = 0;
 int8_t calib_map = 0;
 int8_t action_map = 0;
-
+int8_t status = 0;
 stepper axis1(4,16,17,3,40000,1);
 stepper axis3(25,26,27,5,10000,3);
 stepper axis4(21,22,23,7,10000,4);
@@ -89,10 +89,35 @@ void setup() {
 
 void loop() {
   static bool flag = 1;
-  // axis1.handle();
-  if (flag && (calib_map == 0b00111010)){
-    flag = 0;
-    run_move(chuoshou,6);
+
+  int incoming = Serial.available();
+  if (incoming)
+  {
+    char *buffer = nullptr;
+    if (incoming < 100)
+      buffer = new char[incoming + 1];
+    memset(buffer, 0, incoming + 1);
+    Serial.readBytes(buffer, incoming);
+    if (buffer[0] == '1' && status == 0 && (calib_map == 0b00111010)){
+      status = 1;
+      Serial.println("enter state 1");
+      //FIXME 
+      // run_move()
+    }
+    else if (buffer[1] == '2' && status == 1 && action_map == 0b00111010){
+      status = 2;
+      Serial.println("enter state 2");
+      //FIXME 
+      // run_move()
+    }
+    else if (buffer[1] == '3' && status == 2 && action_map == 0b00111010){
+      status = 3;
+      Serial.println("enter state 3");
+      //FIXME 
+      // run_move()
+    }
+    
+    delete buffer;
   }
   move_handle();
   vTaskDelay(1);

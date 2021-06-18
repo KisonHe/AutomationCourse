@@ -6,12 +6,22 @@ import cv2 as cv
 import numpy as np
 import argparse
 from enum import Enum
+import serial
+import subprocess
 class Status_t(Enum):
     start = 0
     hand = 1
     back = 2
     finished = 3
+USE_UART=0
 
+uart_port = '/dev/ttyUSB0'
+
+def serPrint(ser,str):
+    if (USE_UART == 1):
+        print(str)
+        ser.write(str.encode())
+    pass
 
 class Pos_t(Enum):
     Error = -1
@@ -32,6 +42,7 @@ def getPos(neck,L,R)->Pos_t:
         return Pos_t.Error 
 
 Status = Status_t.start
+
 
 parser = argparse.ArgumentParser(
         description='This script is used to demonstrate OpenPose human pose estimation network '
@@ -100,12 +111,15 @@ net = cv.dnn.readNet(cv.samples.findFile(args.proto), cv.samples.findFile(args.m
 
 # cap = cv.VideoCapture(args.input if args.input else 0)
 cap = cv.VideoCapture("/dev/video2")
+if (USE_UART == 1):
+    mainSer = serial.Serial(uart_port, 115200)
 cnt = 0
 while cv.waitKey(1) < 0:
     hasFrame, frame = cap.read()
     if not hasFrame:
         cv.waitKey()
         break
+    frame = cv.rotate(frame, cv.cv2.ROTATE_90_CLOCKWISE)
 
     frameWidth = frame.shape[1]
     frameHeight = frame.shape[0]
@@ -152,14 +166,24 @@ while cv.waitKey(1) < 0:
             if (ret != Pos_t.Error):
                 if (Status == Status_t.start and ret == Pos_t.handsAboveHead):
                     Status = Status_t.hand
+                    serPrint(mainSer,"1")
+                    subprocess.run(["python","kaudio.py","--num","1"], stdout=subprocess.PIPE)
+                    continue
                     #FIXME Send message here
                 elif (Status == Status_t.hand):
                     if (ret == Pos_t.handsSameHead):
                         Status = Status_t.back
+                        serPrint(mainSer,"2")
+                        subprocess.run(["python","kaudio.py","--num","2"], stdout=subprocess.PIPE)
+                        continue
+                    # serPrint(mainSer,"1")
                     pass
                 elif (Status == Status_t.back):
                     if (ret == Pos_t.handsBelowHead):
                         Status = Status_t.finished
+                        serPrint(mainSer,"3")
+                        subprocess.run(["python","kaudio.py","--num","3"], stdout=subprocess.PIPE)
+                        continue
                     pass
                 pass
             
