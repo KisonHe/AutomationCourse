@@ -129,6 +129,7 @@ net = cv.dnn.readNet(cv.samples.findFile(args.proto), cv.samples.findFile(args.m
 
 # cap = cv.VideoCapture(args.input if args.input else 0)
 cap = cv.VideoCapture("/dev/video2")
+# cap = cv.VideoCapture("/dev/video0")
 if (USE_UART == 1):
     mainSer = serial.Serial(uart_port, 115200)
 else:
@@ -141,6 +142,7 @@ while cv.waitKey(1) < 0:
         break
     # frame = cv.rotate(frame, cv.cv2.ROTATE_90_CLOCKWISE)
     frame = frame[BodyCrop.y:BodyCrop.y_h, BodyCrop.x:BodyCrop.x_w].copy()
+    # frame = cv.resize(frame, (0,0), fx = 0.25, fy = 0.25)
 
     frameWidth = frame.shape[1]
     frameHeight = frame.shape[0]

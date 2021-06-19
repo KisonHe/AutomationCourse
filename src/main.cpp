@@ -89,6 +89,10 @@ void setup() {
 
 void loop() {
   static bool flag = 1;
+  // if (flag && (calib_map == 0b00111010)){
+  //   flag = 0;
+  //   run_move(yujin,2);
+  // }
 
   int incoming = Serial.available();
   if (incoming)
@@ -100,23 +104,39 @@ void loop() {
     Serial.readBytes(buffer, incoming);
     if (buffer[0] == '1' && status == 0 && (calib_map == 0b00111010)){
       status = 1;
-      run_move(chuoshou,17);
+      run_move(chuoshou,7);
       Serial.println("enter state 1");
       //FIXME 
       // run_move()
     }
-    else if (buffer[1] == '2' && status == 1 && action_map == 0b00111010){
-      status = 2;
-      run_move(chuobei,24);
-      Serial.println("enter state 2");
+    else if (buffer[0] == '2' && status == 1){//&& action_map == 0b00111010){
+      if (action_map == 0b00111010){
+        status = 2;
+        run_move(chuobei,19);
+        Serial.println("enter state 2");
+      }
+      else{
+        Serial.print("got msg while status = ");
+        Serial.print(status);
+        Serial.print(" and actionmap = ");
+        Serial.print(action_map);
+      }
       //FIXME 
       // run_move()
     }
-    else if (buffer[1] == '3' && status == 2 && action_map == 0b00111010){
-      status = 3;
-      Serial.println("enter state 3");
-      //FIXME 
-      // run_move()
+    else if (buffer[0] == '3' && status == 2){// && action_map == 0b00111010){
+      if (action_map == 0b00111010){
+        status = 3;
+        Serial.println("enter state 3");
+        run_move(yujin,2);
+      }
+      else{
+        Serial.print("got msg while status = ");
+        Serial.print(status);
+        Serial.print(" and actionmap = ");
+        Serial.print(action_map);
+      }
+
     }
     
     delete buffer;
@@ -140,6 +160,7 @@ int8_t move_handle(){
           nowTotalNumOfMoves = 0;
           nowMoveNum = 0;
           Serial.println("end of moves");
+          action_map = 0b00111010;
           return 1;
         }
         Serial.println("\n-------\nnow move is");

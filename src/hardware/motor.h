@@ -21,8 +21,6 @@ private:
     uint8_t ID = 0;
     float Anglemin = 0;
     float Anglemax = 0;
-    
-    
 
     /* data */
 public:
