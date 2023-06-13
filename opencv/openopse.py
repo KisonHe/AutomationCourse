@@ -31,7 +31,7 @@ class Status_t(Enum):
     hand = 1
     back = 2
     finished = 3
-USE_UART=0
+USE_UART=1
 
 uart_port = '/dev/ttyUSB0'
 
@@ -127,9 +127,8 @@ inScale = args.scale
 
 net = cv.dnn.readNet(cv.samples.findFile(args.proto), cv.samples.findFile(args.model))
 
-# cap = cv.VideoCapture(args.input if args.input else 0)
 cap = cv.VideoCapture("/dev/video2")
-# cap = cv.VideoCapture("/dev/video0")
+
 if (USE_UART == 1):
     mainSer = serial.Serial(uart_port, 115200)
 else:
@@ -140,9 +139,8 @@ while cv.waitKey(1) < 0:
     if not hasFrame:
         cv.waitKey()
         break
-    # frame = cv.rotate(frame, cv.cv2.ROTATE_90_CLOCKWISE)
+
     frame = frame[BodyCrop.y:BodyCrop.y_h, BodyCrop.x:BodyCrop.x_w].copy()
-    # frame = cv.resize(frame, (0,0), fx = 0.25, fy = 0.25)
 
     frameWidth = frame.shape[1]
     frameHeight = frame.shape[0]
@@ -155,17 +153,12 @@ while cv.waitKey(1) < 0:
 
     points = []
     for i in range(len(BODY_PARTS)):
-        # Slice heatmap of corresponding body's part.
         heatMap = out[0, i, :, :]
 
-        # Originally, we try to find all the local maximums. To simplify a sample
-        # we just find a global one. However only a single pose at the same time
-        # could be detected this way.
         _, conf, _, point = cv.minMaxLoc(heatMap)
         x = (frameWidth * point[0]) / out.shape[3]
         y = (frameHeight * point[1]) / out.shape[2]
 
-        # Add a point if it's confidence is higher than threshold.
         points.append((int(x), int(y)) if conf > args.thr else None)
 
     for pair in POSE_PAIRS:
@@ -192,14 +185,12 @@ while cv.waitKey(1) < 0:
                     serPrint(mainSer,"1")
                     subprocess.run(["python","kaudio.py","--num","1"], stdout=subprocess.PIPE)
                     continue
-                    #FIXME Send message here
                 elif (Status == Status_t.hand):
                     if (ret == Pos_t.handsSameHead):
                         Status = Status_t.back
                         serPrint(mainSer,"2")
                         subprocess.run(["python","kaudio.py","--num","2"], stdout=subprocess.PIPE)
                         continue
-                    # serPrint(mainSer,"1")
                     pass
                 elif (Status == Status_t.back):
                     if (ret == Pos_t.handsBelowHead):
